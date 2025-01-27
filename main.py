@@ -159,7 +159,8 @@ def save_to_airtable(data: dict):
 
 def main():
     st.title("Mentor Visit Tracker")
-    st.write("Record details about your school visit")
+    st.divider()
+    st.subheader("Details of Visit")
 
     # Mentor Name
     mentor_name = st.selectbox("Mentor Name", mentors)
@@ -177,6 +178,8 @@ def main():
 
     # Programme (changes questions below if needed)
     programme = st.selectbox("Programme", ["Literacy", "Zazi iZandi"])
+    st.divider()
+    st.subheader("Mentor Observations")
 
     if programme == "Literacy":
         q1 = st.checkbox("Are LC's using their Letter Trackers correctly?")
@@ -189,7 +192,7 @@ def main():
 
 
     # Quality of Sessions (slider 1-10)
-    quality = st.slider("Quality of Sessions", 1, 10, 5)
+    quality = st.slider("Quality of Sessions Observed", 1, 10, 5)
 
     # “Any Supplies Needed” and “Commentary”
     # (If you truly want checkboxes, adjust accordingly, but typically these are text areas.)
