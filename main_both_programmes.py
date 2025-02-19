@@ -4,6 +4,15 @@ from pyairtable import Table
 
 # -- Set up your Airtable credentials in Streamlit Secrets --
 # You can add them via the Streamlit web interface or a .streamlit/secrets.toml file.
+# st.secrets["AIRTABLE_API_KEY"]
+# st.secrets["AIRTABLE_BASE_ID"]
+# st.secrets["AIRTABLE_TABLE_NAME"]
+
+# Example structure of secrets.toml:
+# [AIRTABLE]
+# API_KEY = "your_airtable_key"
+# BASE_ID = "appYourBaseID"
+# TABLE_NAME = "MentorVisits"
 
 schools = [
     "Holy Name Community",
@@ -138,7 +147,6 @@ schools = [
 
 mentors = ["Babalo", "Buyi", "Chombe", "Faith", "Fiks", "Sibongile", "Suthukazi", "Zama", "Ziyanda", "Zolani"]
 
-
 def save_to_airtable(data: dict):
     """Save the given data dictionary to Airtable."""
     table = Table(
@@ -154,36 +162,77 @@ def main():
     st.divider()
     st.subheader("Details of Visit")
 
+    # Mentor Name
     mentor_name = st.selectbox("Mentor Name", mentors)
-    visit_date = st.date_input("Date", datetime.date.today())
-    selected_school = st.selectbox("School Visited", schools)
 
+    # Date
+    visit_date = st.date_input("Date", datetime.date.today())
+
+    # School Visited
+    # You can expand this list as needed; “Other” reveals a text box.
+    selected_school = st.selectbox("School Visited", schools)
+    if selected_school == "Other":
+        custom_school = st.text_input("Enter the school's name")
+        if custom_school.strip():
+            selected_school = custom_school.strip()
+
+    # Programme (changes questions below if needed)
+    programme = st.selectbox("Programme", ["Literacy", "Zazi iZandi"])
     st.divider()
     st.subheader("Mentor Observations")
 
-    q1 = st.checkbox("Are TA's using their Letter Trackers correctly?")
-    q2 = st.checkbox("Do the TA's groups look correct?")
-    q3 = st.checkbox("Are TA's completing their admin correctly?")
+    if programme == "Literacy":
+        q1 = st.checkbox("Are LC's using their Letter Trackers correctly?")
+        q2 = st.checkbox("Are LC's using their Session Trackers correctly?")
+        q3 = st.checkbox("Are LC's completing back-of-book admin correctly??")
+    elif programme == "Zazi iZandi":
+        q4 = st.checkbox("Are LC's using their Letter Trackers correctly?")
+        q5 = st.checkbox("Do the LC's groups look correct?")
+        q6 = st.checkbox("Are LC's completing their admin correctly??")
 
+
+    # Quality of Sessions (slider 1-10)
     quality = st.slider("Quality of Sessions Observed", 1, 10, 5)
+
+    # “Any Supplies Needed” and “Commentary”
+    # (If you truly want checkboxes, adjust accordingly, but typically these are text areas.)
     supplies = st.text_area("Any Supplies Needed")
     commentary = st.text_area("Commentary")
 
+    # Button to Save Record
     if st.button("Save Visit Record"):
-        data = {
-            "Mentor Name": mentor_name,
-            "Date": visit_date.isoformat(),
-            "School Visited": selected_school,
-            "Using Letter Trackers": q1,
-            "Groups_Correct": q2,
-            "Completing Admin": q3,
-            "Quality of Sessions": quality,
-            "Supplies Needed": supplies,
-            "Commentary": commentary,
-        }
+        # Build dictionary for Airtable
+        if programme == "Literacy":
+            data = {
+                "Mentor Name": mentor_name,
+                "Date": visit_date.isoformat(),
+                "School Visited": selected_school,
+                "Programme": programme,
+                "Using Letter Trackers": q1,
+                "Using Session Trackers": q2,
+                "Completing Admin": q3,
+                "Quality of Sessions": quality,
+                "Supplies Needed": supplies,
+                "Commentary": commentary,
+            }
+        elif programme == "Zazi iZandi":
+            data = {
+                "Mentor Name": mentor_name,
+                "Date": visit_date.isoformat(),
+                "School Visited": selected_school,
+                "Programme": programme,
+                "Using Letter Trackers": q4,
+                "Groups_Correct": q5,
+                "Completing Admin": q6,
+                "Quality of Sessions": quality,
+                "Supplies Needed": supplies,
+                "Commentary": commentary,
+            }
+
         try:
             record = save_to_airtable(data)
             st.success("Visit record saved successfully!")
+            # st.json(record)
         except Exception as e:
             st.error(f"Failed to save record: {e}")
 
